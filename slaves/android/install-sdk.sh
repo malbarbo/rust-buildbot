@@ -13,29 +13,29 @@ mkdir sdk
 curl http://dl.google.com/android/android-sdk_r24.4-linux.tgz | \
     tar xzf - -C sdk --strip-components=1
 
-filter="platform-tools,android-18,android-21"
-filter="$filter,sys-img-x86-android-18"
-filter="$filter,sys-img-x86_64-android-18"
-filter="$filter,sys-img-armeabi-v7a-android-18"
-filter="$filter,sys-img-x86-android-21"
-filter="$filter,sys-img-x86_64-android-21"
-filter="$filter,sys-img-armeabi-v7a-android-21"
+# API 24 is the minimum to run arm64 emulator
+# Note that this is the API level of the emulator, not the api of the NDK
+# We can use an API for NDK that is less than or equal to this
+API=24
+
+filter="platform-tools,android-$API"
+filter="$filter,sys-img-armeabi-v7a-android-$API"
+filter="$filter,sys-img-arm64-v8a-android-$API"
+filter="$filter,sys-img-x86-android-$API"
 
 ./accept-licenses.sh "android - update sdk -a --no-ui --filter $filter"
 
 echo "no" | android create avd \
-                --name arm-18 \
-                --target android-18 \
+                --name arm-$API \
+                --target android-$API \
                 --abi armeabi-v7a
+
 echo "no" | android create avd \
-                --name arm-21 \
-                --target android-21 \
-                --abi armeabi-v7a
+                --name aarch64-$API \
+                --target android-$API \
+                --abi arm64-v8a
+
 echo "no" | android create avd \
-                --name x86-21 \
-                --target android-21 \
+                --name x86-$API \
+                --target android-$API \
                 --abi x86
-echo "no" | android create avd \
-                --name x86_64-21 \
-                --target android-21 \
-                --abi x86_64

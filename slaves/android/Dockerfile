@@ -12,24 +12,25 @@ RUN pip install buildbot-slave
 RUN groupadd -r rustbuild && useradd -r -g rustbuild rustbuild
 RUN mkdir /buildslave && chown rustbuild:rustbuild /buildslave
 
-# Setup PATH to allow running android tools.
-ENV PATH=$PATH:/android/ndk-arm/bin:/android/ndk-aarch64/bin:/android/ndk-x86:/android/sdk/tools:/android/sdk/platform-tools
-
-# Not sure how to install 64-bit binaries in the sdk?
-ENV ANDROID_EMULATOR_FORCE_32BIT=true
-
 RUN mkdir /android && chown rustbuild:rustbuild /android
 RUN mkdir /home/rustbuild && chown rustbuild:rustbuild /home/rustbuild
 
 WORKDIR /android
 USER rustbuild
 
-COPY android/install-ndk.sh android/install-sdk.sh android/accept-licenses.sh \
-    /android/
+COPY android/*.sh /android/
+
+# Setup PATH to allow running android tools.
+ENV PATH=$PATH:/android/ndk-arm/bin:/android/ndk-aarch64/bin:/android/ndk-x86/bin:/android/sdk/tools:/android/sdk/platform-tools
 
 RUN sh install-ndk.sh
 RUN sh install-sdk.sh
 RUN rm *.sh
+
+# Setup SHELL so android can detect a 64bits system, see
+# http://stackoverflow.com/a/41789144
+# https://issues.jenkins-ci.org/browse/JENKINS-26930?focusedCommentId=230791&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-230791
+ENV SHELL /bin/dash
 
 # When running this container, startup buildbot
 WORKDIR /buildslave
